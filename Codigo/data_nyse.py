@@ -2,10 +2,11 @@
 
 import yfinance as yf
 import datetime
+import pandas as pd
 
 
-def obtener_opciones_yahoo_finance(ticker = 'GGAL'):
-    
+
+def obtener_opciones_yahoo_finance(ticker='GGAL'):
     data = yf.Ticker(ticker)
     vencimientos = data.options
 
@@ -14,22 +15,23 @@ def obtener_opciones_yahoo_finance(ticker = 'GGAL'):
 
     for vencimiento in vencimientos[1:]:
         try:
-            calls = calls.append(data.option_chain(vencimiento)[0])
+            calls = pd.concat([calls, data.option_chain(vencimiento)[0]])
         except:
             pass
         try:
-            puts = puts.append(data.option_chain(vencimiento)[1])
+            puts = pd.concat([puts, data.option_chain(vencimiento)[1]])
         except:
             pass
 
-    panel_opciones = calls.append(puts)
+    panel_opciones = pd.concat([calls, puts])
 
     panel_opciones['Ticker'] = ticker
 
     hist = data.history()
     panel_opciones['Spot'] = hist.tail(1)['Close'].iloc[0]
-    
+
     return panel_opciones
+
 
 
 def obtener_panel_opciones_nyse(ticker='GGAL', clean_flag=False):
